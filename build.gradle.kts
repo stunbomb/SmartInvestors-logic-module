@@ -5,120 +5,99 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.room)
-    alias(libs.plugins.ksp)
+    id("com.android.application") version "8.5.2"
+    id("org.jetbrains.kotlin.multiplatform") version "2.1.10"
+    id("org.jetbrains.compose") version "1.7.3"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10"
+    id("androidx.room") version "2.7.0-rc03"
+    id("com.google.devtools.ksp") version "2.1.10-1.0.29"
     kotlin("plugin.serialization") version "2.1.0"
 }
 
 kotlin {
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         }
     }
-    
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
+        it.binaries.framework {
             baseName = "logic"
             isStatic = true
         }
     }
-    
+
     sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.compose.runtime:runtime")
+                implementation("org.jetbrains.compose.foundation:foundation")
+                implementation("org.jetbrains.compose.material3:material3")
+                implementation("org.jetbrains.compose.ui:ui")
+                implementation("org.jetbrains.compose.components:components-resources")
+                implementation("org.jetbrains.compose.components:components-uitooling-preview")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
 
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.koin.android)
-            implementation(libs.koin.androidx.compose)
-            implementation(libs.ktor.client.cio)
-            implementation(libs.ktor.client.gson)
-            implementation(libs.ktor.serialization.gson)
-            implementation(libs.ktor.client.okhttp)
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                implementation("io.ktor:ktor-client-core:3.0.2")
+                implementation("io.ktor:ktor-client-json:3.0.2")
+                implementation("io.ktor:ktor-client-serialization:3.0.2")
+                implementation("io.ktor:ktor-client-logging:3.0.2")
+                implementation("io.ktor:ktor-client-content-negotiation:3.0.2")
+
+                implementation("io.insert-koin:koin-core:4.0.0")
+                implementation("io.insert-koin:koin-compose:4.0.0")
+                implementation("io.insert-koin:koin-compose-viewmodel:4.0.0")
+
+                implementation("androidx.room:room-runtime:2.7.0-rc03")
+                implementation("androidx.sqlite:sqlite-bundled:2.5.0-rc03")
+
+                implementation("io.github.jan-tennert.supabase:auth-kt:3.0.3")
+                implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.3")
+                implementation("io.github.jan-tennert.supabase:storage-kt:3.0.3")
+                implementation("io.github.jan-tennert.supabase:realtime-kt:3.0.3")
+
+                implementation("com.revenuecat.purchases:purchases-kmp-core:1.7.3+13.26.1")
+                implementation("com.revenuecat.purchases:purchases-kmp-datetime:1.7.3+13.26.1")
+                implementation("com.revenuecat.purchases:purchases-kmp-either:1.7.3+13.26.1")
+                implementation("com.revenuecat.purchases:purchases-kmp-result:1.7.3+13.26.1")
+            }
         }
 
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
+        val androidMain by getting {
+            dependencies {
+                implementation("androidx.activity:activity-compose:1.10.1")
+                implementation("io.ktor:ktor-client-cio:3.0.2")
+                implementation("io.ktor:ktor-client-gson:3.0.2")
+                implementation("io.ktor:ktor-client-okhttp:3.0.2")
+                implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.4")
+                implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
+            }
         }
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(libs.kotlinx.datetime)
 
-            //koin
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-
-            //room
-            api(libs.room.runtime)
-            //implementation(libs.room.compiler)
-            implementation(libs.sqlite.bundled)
-
-            //Supabase
-            implementation(libs.supabase.auth)
-            implementation(libs.supabase.database)
-            implementation(libs.supabase.storage)
-            implementation(libs.supabase.realtime)
-
-            //KOTR
-            implementation(kotlin("script-runtime"))
-            implementation(libs.ktor.client.cio) // For JVM (Android)
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.json)
-            implementation(libs.ktor.client.serialization)
-            implementation(libs.ktor.client.logging)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.kotlinx.serialization.json)
-
-
-            //RevenueCat
-            implementation(libs.purchases.core)
-            implementation(libs.purchases.datetime)   // Optional
-            implementation(libs.purchases.either)     // Optional
-            implementation(libs.purchases.result)     // Optional
-
+        val iosMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-darwin:3.0.2")
+            }
         }
-        val iosMain = getByName("iosMain")
-        iosMain.dependsOn(getByName("commonMain"))
-
-        getByName("iosX64Main").dependsOn(iosMain)
-        getByName("iosArm64Main").dependsOn(iosMain)
-        getByName("iosSimulatorArm64Main").dependsOn(iosMain)
-
     }
 }
 
 android {
     namespace = "com.dblhargrove"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dblhargrove"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk = 24
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
     packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+        resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
     buildTypes {
         getByName("release") {
@@ -129,24 +108,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
 }
 
 dependencies {
-    debugImplementation(compose.uiTooling)
-
-    // Work Manager
-    api(libs.androidx.work.runtime.ktx)
-
-    // Room target platforms
-    /*add(configurationName = "kspAndroid", libs.room.compiler)
-    add(configurationName = "kspIosX64", libs.room.compiler)
-    add(configurationName = "kspIosArm64", libs.room.compiler)
-    add(configurationName = "kspIosSimulatorArm64", libs.room.compiler)*/
-
-
+    debugImplementation("org.jetbrains.compose.ui:ui-tooling")
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 }
 
-room{
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
     schemaDirectory("$projectDir/schemas")
 }
